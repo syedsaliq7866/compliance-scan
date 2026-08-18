@@ -1,0 +1,48 @@
+{
+    "storage_findings": [
+        {
+            "bucket": "company-public-logs",
+            "encrypted": false,
+            "versioning": false
+        },
+        {
+            "bucket": "secure-financial-records",
+            "encrypted": true,
+            "versioning": true
+        },
+        {
+            "bucket": "user-backups-2026",
+            "encrypted": false,
+            "versioning": true
+        }
+    ],
+    "iam_findings": [
+        {
+            "user": "admin-root",
+            "issue": "MFA Missing"
+        },
+        {
+            "user": "admin-root",
+            "issue": "Old Access Keys"
+        },
+        {
+            "user": "service-acc",
+            "issue": "MFA Missing"
+        },
+        {
+            "user": "service-acc",
+            "issue": "Old Access Keys"
+        }
+    ],
+    "monitoring_findings": [
+        {
+            "service": "CloudTrail (Audit Logging)",
+            "enabled": true
+        },
+        {
+            "service": "Amazon Macie (PII Scanning)",
+            "enabled": false
+        }
+    ],
+    "total_violations": 8
+}
