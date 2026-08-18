@@ -1,13 +1,11 @@
-name: DevSecOps Compliance Scan
+name: DevSecOps Auto-Remediation Pipeline
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
-  security-audit:
+  security-audit-and-fix:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,5 +15,16 @@ jobs:
     - name: Build Scanner Container
       run: docker build -t compliance-scanner .
 
-    - name: Run HIPAA/GDPR Audit
-      run: docker run --rm compliance-scanner
+    - name: 1. Run Audit and Generate Report
+      run: docker run --rm compliance-scanner python main.py
+
+    - name: 2. Run Auto-Remediation
+      run: docker run --rm compliance-scanner python remediate.py > remediation_log.txt
+
+    - name: 3. Save Reports as Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: compliance-results
+        path: |
+          compliance_report.json
+          remediation_log.txt
