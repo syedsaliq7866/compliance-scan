@@ -1,0 +1,21 @@
+name: DevSecOps Compliance Scan
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Build Scanner Container
+      run: docker build -t compliance-scanner .
+
+    - name: Run HIPAA/GDPR Audit
+      run: docker run --rm compliance-scanner
