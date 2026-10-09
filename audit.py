@@ -1,3 +1,15 @@
+"""
+*** LEGACY / UNUSED -- not imported anywhere in the running app. ***
+
+Earliest version of the S3 audit, from before scanners.py/remediation.py/
+agent_graph.py existed. Writes its own compliance_report.json directly
+(a different, incompatible shape from the one main.py writes now) and is
+only ever run standalone (`python audit.py`), never imported.
+
+Safe to delete once confirmed nothing outside this file references it; kept
+for now rather than removed outright.
+"""
+
 import boto3
 import json
 

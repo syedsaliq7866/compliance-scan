@@ -1,3 +1,17 @@
+"""
+*** LEGACY / UNUSED -- not imported anywhere in the running app. ***
+
+This is a standalone pre-FastAPI script (note the `if __name__ == "__main__"`
+at the bottom -- it was meant to be run directly with `python iam_compliance.py`,
+not imported). scanners.py.scan_iam_security_issues() re-implements the live
+IAM scan itself (MFA + stale keys + admin policy, with its own mock fallback)
+and never imports this module. audit_iam_security() here only checks MFA --
+it's an earlier, less complete version of that logic.
+
+Safe to delete once confirmed nothing outside this file references it; kept
+for now rather than removed outright.
+"""
+
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 

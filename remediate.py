@@ -1,3 +1,18 @@
+"""
+*** LEGACY / UNUSED -- not imported anywhere in the running app. ***
+
+Pre-agentic, pre-human-approval auto-remediation script: reads
+compliance_report.json and applies fixes with NO approval step, which is
+exactly the design main.py/agent_graph.py/remediation.py replaced (every
+fix now requires a human to hit /api/approve first). Also reads a
+compliance_report.json shape (storage_findings/iam_findings/violations)
+that the current scan no longer produces. Only ever run standalone
+(`python remediate.py`), never imported.
+
+Safe to delete once confirmed nothing outside this file references it; kept
+for now rather than removed outright.
+"""
+
 import json
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError

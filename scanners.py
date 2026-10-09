@@ -52,6 +52,13 @@ def _mock_monitoring_findings():
     return [{"resource": "account", "service": "Monitoring", "issue": "Amazon Macie (PII scanning) is disabled", "_mock": True}]
 
 
+# ---------------------------------------------------------------------------
+# IAM scanner -- checks every user except security-agent-bot (the agent's own
+# service account, excluded so the tool never flags/quarantines itself) for:
+# missing MFA, access keys older than 90 days, and a directly-attached
+# AdministratorAccess policy. Self-contained (does not call iam_compliance.py,
+# which is unused legacy code -- see that file's header).
+# ---------------------------------------------------------------------------
 def scan_iam_security_issues():
     """Scans AWS IAM for missing MFA, stale keys (>90 days), and excessive admin permissions."""
     try:
@@ -99,6 +106,12 @@ def scan_iam_security_issues():
         return _mock_iam_findings() if MOCK_ON_FAILURE else []
 
 
+# ---------------------------------------------------------------------------
+# S3 scanner -- lists every bucket and checks public-access-block settings
+# itself, then delegates the encryption/versioning checks to
+# storage_compliance.py's two live helper functions (the only part of that
+# file still in use -- see its header for what's dead code there).
+# ---------------------------------------------------------------------------
 def scan_s3_security_issues():
     """Public access + encryption + versioning, via storage_compliance.py's checks."""
     try:
@@ -128,6 +141,12 @@ def scan_s3_security_issues():
         return _mock_s3_findings() if MOCK_ON_FAILURE else []
 
 
+# ---------------------------------------------------------------------------
+# Monitoring scanner -- thin wrapper around monitoring_compliance.py's
+# account-level CloudTrail/Macie check, reshaping its {service, enabled}
+# rows into the same {resource, service, issue} finding shape the other two
+# scanners return, so agent_graph.py can treat all three uniformly.
+# ---------------------------------------------------------------------------
 def scan_monitoring_issues():
     """CloudTrail + Macie, via monitoring_compliance.py."""
     try:
@@ -143,6 +162,11 @@ def scan_monitoring_issues():
         return _mock_monitoring_findings() if MOCK_ON_FAILURE else []
 
 
+# ---------------------------------------------------------------------------
+# Post-remediation verification -- called by agent_graph.py's verify_node
+# after a real (non-mock) fix executes, to confirm the original finding is
+# actually gone rather than just trusting the boto3 call succeeded.
+# ---------------------------------------------------------------------------
 def check_resource_now(service: str, resource_name: str, issue_keyword: str):
     """Used by the agent's 'verify' step after a remediation: re-run only the
     relevant scanner and check whether a finding matching this resource and

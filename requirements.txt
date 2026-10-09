@@ -4,6 +4,10 @@ pydantic==2.9.2
 boto3==1.34.68
 requests==2.32.3
 python-dotenv==1.0.1
+# Agentic engine (agent_graph.py): LangGraph builds the investigate/stage and
+# remediate/verify state graphs; langchain-core supplies the message/tool
+# types the graphs pass around; langchain-ollama is the ChatOllama client
+# that talks to the locally-running Ollama server.
 langgraph>=0.2.50,<0.3.0
 langchain-core>=0.3.0,<0.4.0
 langchain-ollama>=0.2.0,<0.3.0
