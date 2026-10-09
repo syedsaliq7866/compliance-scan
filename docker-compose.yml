@@ -1,0 +1,50 @@
+# Sandbox stack: the compliance API + n8n for automation on top of it.
+#
+# WHY n8n here: it gives you a visual workflow (schedule -> scan -> check
+# pending actions -> notify) that's far easier to demo to a non-technical
+# audience than walking through Swagger UI, and it's where you'd eventually
+# plug in Slack/email alerts or a scheduled recurring scan without writing
+# more Python.
+#
+# Run with: docker compose up --build
+# API:   http://localhost:5000/docs
+# n8n:   http://localhost:5678  (first run asks you to create a local login)
+#
+# Import workflows/compliance-scan-workflow.json into n8n once it's up.
+
+services:
+  api:
+    build: .
+    container_name: compliance-api
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ~/.aws:/root/.aws:ro
+    networks:
+      - compliance-net
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: compliance-n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_SECURE_COOKIE=false
+      - GENERIC_TIMEZONE=Asia/Kolkata
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - compliance-net
+    depends_on:
+      - api
+
+networks:
+  compliance-net:
+    driver: bridge
+
+volumes:
+  n8n_data:

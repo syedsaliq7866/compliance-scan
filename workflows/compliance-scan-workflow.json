@@ -1,0 +1,102 @@
+{
+  "name": "Compliance Scan - Scheduled Scan + Approval Alert",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "n8n-manual-trigger",
+      "name": "Run Now (demo button)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 400]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "hours", "hoursInterval": 6 }
+          ]
+        }
+      },
+      "id": "n8n-schedule-trigger",
+      "name": "Every 6 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:5000/api/scan",
+        "options": {}
+      },
+      "id": "n8n-http-scan",
+      "name": "Run Compliance Scan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "leftValue": "={{$json.pending_actions ? $json.pending_actions.length : 0}}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "gt" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "n8n-if-findings",
+      "name": "Any Pending Actions?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [720, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://api:5000/api/pending",
+        "options": {}
+      },
+      "id": "n8n-http-pending",
+      "name": "Get Pending Actions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [960, 220]
+    },
+    {
+      "parameters": {},
+      "id": "n8n-noop-notify",
+      "name": "Notify Team (add Slack/Email node here)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1200, 220]
+    },
+    {
+      "parameters": {},
+      "id": "n8n-noop-secure",
+      "name": "All Clear",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [960, 400]
+    }
+  ],
+  "connections": {
+    "Run Now (demo button)": { "main": [[{ "node": "Run Compliance Scan", "type": "main", "index": 0 }]] },
+    "Every 6 Hours": { "main": [[{ "node": "Run Compliance Scan", "type": "main", "index": 0 }]] },
+    "Run Compliance Scan": { "main": [[{ "node": "Any Pending Actions?", "type": "main", "index": 0 }]] },
+    "Any Pending Actions?": {
+      "main": [
+        [{ "node": "Get Pending Actions", "type": "main", "index": 0 }],
+        [{ "node": "All Clear", "type": "main", "index": 0 }]
+      ]
+    },
+    "Get Pending Actions": { "main": [[{ "node": "Notify Team (add Slack/Email node here)", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": { "executionOrder": "v1" }
+}

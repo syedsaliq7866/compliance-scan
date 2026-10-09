@@ -1,30 +1,18 @@
-name: DevSecOps Auto-Remediation Pipeline
+name: DevSecOps Compliance Check (manual only)
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
-  security-audit-and-fix:
+  compliance-check:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Build Scanner Container
-      run: docker build -t compliance-scanner .
+    - name: Build API Container
+      run: docker build -t compliance-api .
 
-    - name: 1. Run Audit and Generate Report
-      run: docker run --rm compliance-scanner python main.py
-
-    - name: 2. Run Auto-Remediation
-      run: docker run --rm compliance-scanner python remediate.py > remediation_log.txt
-
-    - name: 3. Save Reports as Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: compliance-results
-        path: |
-          compliance_report.json
-          remediation_log.txt
+    - name: Note
+      run: echo "Auto-remediation removed from CI. Scanning and approvals now happen through the running API's /api/scan and /api/approve endpoints, with a human reviewing before anything is applied."
