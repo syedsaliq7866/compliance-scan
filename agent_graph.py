@@ -299,6 +299,29 @@ def investigate_node(state: ScanState) -> ScanState:
             # trustworthy enough to call this a successful agentic run.
             raise RuntimeError("Agent completed without checking any compliance area.")
 
+        if not proposed and any(
+            key.lower() in f["issue"].lower() for f in findings for key in _RULE_MAP
+        ):
+            # WHAT: the agent checked all three areas (or exhausted its step
+            # budget trying) but staged zero remediations, even though a
+            # real, rule-mappable finding (e.g. missing MFA, a public S3
+            # bucket) is sitting right there in `findings`.
+            # WHY: observed in practice -- the model gets stuck re-calling
+            # one tool (e.g. get_monitoring_findings) instead of advancing
+            # to stage_remediation, and burns its whole step budget doing
+            # it. Returning that as a "successful" llama3_agentic run with
+            # an empty pending_actions list is worse than being honest the
+            # agentic pass produced nothing usable, so this is treated like
+            # any other failure mode: fall back to the deterministic
+            # rule-based pass, which is guaranteed to stage the real
+            # findings it knows how to act on.
+            log.warning(
+                "Agentic investigation checked %s but staged 0 actions despite "
+                "real actionable findings; falling back to rule-based.",
+                ", ".join(sorted(areas_checked)),
+            )
+            return _rule_based_fallback()
+
         return {
             "findings": findings,
             "proposed_actions": proposed,
